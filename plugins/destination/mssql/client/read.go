@@ -9,10 +9,7 @@ import (
 )
 
 func (c *Client) Read(ctx context.Context, table *schema.Table, sourceName string, res chan<- []any) (err error) {
-	tx, err := c.db.BeginTx(ctx, &sql.TxOptions{
-		Isolation: sql.LevelRepeatableRead,
-		ReadOnly:  true,
-	})
+	tx, err := c.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelRepeatableRead})
 	if err != nil {
 		return err
 	}
