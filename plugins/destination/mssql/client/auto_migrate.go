@@ -21,7 +21,7 @@ func (c *Client) autoMigrateTable(ctx context.Context, table *schema.Table) erro
 	stalePks := c.getStalePks(table, pkPresent)
 	if len(stalePks) > 0 {
 		dropConstraintSQL := "alter table " + sanitizeIdentifier(table.Name) +
-			" drop constraint if exists " + sanitizeIdentifier(table.Name+"_cqpk")
+			" drop " + sanitizeIdentifier(table.Name+"_cqpk")
 		sep := strings.Repeat("-", len(dropConstraintSQL)+1)
 		query := fmt.Sprintf("%s\n%s;\n%s\n%s", sep, dropConstraintSQL, getDropNotNullQuery(table, stalePks), sep)
 		return fmt.Errorf(
@@ -56,7 +56,7 @@ func (c *Client) ensureColumns(ctx context.Context, table *schema.Table, pkPrese
 
 			recreatePK = recreatePK || column.CreationOptions.PrimaryKey
 
-			if _, err := c.db.ExecContext(ctx, "alter table "+tableName+" add column "+columnName+" "+columnType); err != nil {
+			if _, err := c.db.ExecContext(ctx, "alter table "+tableName+" add "+columnName+" "+columnType); err != nil {
 				return fmt.Errorf("failed to add column %s to table %s: %w", column.Name, table.Name, err)
 			}
 		case currColumn.typ != columnType:
@@ -76,7 +76,7 @@ func (c *Client) ensureColumns(ctx context.Context, table *schema.Table, pkPrese
 				return fmt.Errorf("failed to drop column %s on table %s: %w", column.Name, table.Name, err)
 			}
 
-			if _, err := c.db.ExecContext(ctx, "alter table "+tableName+" add column "+columnName+" "+columnType); err != nil {
+			if _, err := c.db.ExecContext(ctx, "alter table "+tableName+" add "+columnName+" "+columnType); err != nil {
 				return fmt.Errorf("failed to add column %s on table %s: %w", column.Name, table.Name, err)
 			}
 		}
@@ -124,7 +124,7 @@ func (c *Client) recreatePK(ctx context.Context, table *schema.Table) (err error
 		}
 	}()
 
-	if _, err := tx.ExecContext(ctx, "alter table "+tableName+" drop constraint if exists "+constraintName); err != nil {
+	if _, err := tx.ExecContext(ctx, "alter table "+tableName+" drop "+constraintName); err != nil {
 		return fmt.Errorf("failed to drop primary key constraint on table %s: %w", table.Name, err)
 	}
 
@@ -141,7 +141,7 @@ func (c *Client) recreatePK(ctx context.Context, table *schema.Table) (err error
 func (c *Client) setNotNullOnPks(ctx context.Context, table *schema.Table) error {
 	tableName := sanitizeIdentifier(table.Name)
 	for _, col := range table.PrimaryKeys() {
-		query := "alter table " + tableName + " alter column " + sanitizeIdentifier(col) + " set not null"
+		query := "alter table " + tableName + " alter column " + sanitizeIdentifier(col) + " not null"
 		if _, err := c.db.ExecContext(ctx, query); err != nil {
 			return fmt.Errorf("failed to set not null on column %s on table %s: %w", col, table.Name, err)
 		}
