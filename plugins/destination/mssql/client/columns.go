@@ -82,7 +82,7 @@ join sys.columns c ON t.object_id = c.object_id
 join sys.types tp ON c.user_type_id = tp.user_type_id
 where 
     s.[name] = 'dbo' -- use default schema here
-    and t.[name] = $tableName`
+    and t.[name] = @tableName`
 	rows, err := c.db.QueryContext(ctx, sqlSelectColumnTypes, sql.Named("tableName", tableName))
 	if err != nil {
 		return nil, err
@@ -119,7 +119,7 @@ from sys.schemas s
     inner join sys.index_columns ic on i.object_id = ic.object_id and i.index_id = ic.index_id
     inner join sys.columns tc on ic.object_id = tc.object_id and ic.column_id = tc.column_id
 where s.[name] = 'dbo' -- use default schema here
-  and t.[name] = $tableName
+  and t.[name] = @tableName
   and i.is_primary_key = 1
 order by ic.key_ordinal`
 	rows, err := c.db.QueryContext(ctx, sqlSelectPKColumns, sql.Named("tableName", tableName))

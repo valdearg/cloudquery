@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
 	"github.com/cloudquery/plugin-sdk/schema"
@@ -34,7 +35,7 @@ func (c *Client) migrate(ctx context.Context, table *schema.Table) error {
 			return err
 		}
 	default:
-		if err := c.createTableIfNotExist(ctx, table); err != nil {
+		if err := c.createTable(ctx, table); err != nil {
 			return err
 		}
 	}
@@ -43,10 +44,11 @@ func (c *Client) migrate(ctx context.Context, table *schema.Table) error {
 }
 
 func (c *Client) tableExists(ctx context.Context, table string) (bool, error) {
-	const tableExistsQuery = `select count(*) from information_schema.tables where table_name = $tableName`
+	const tableExistsQuery = `select count(*) from information_schema.tables where table_name = @tableName`
 
 	var tableExist int
-	if err := c.db.QueryRowContext(ctx, tableExistsQuery, table).Scan(&tableExist); err != nil {
+	row := c.db.QueryRowContext(ctx, tableExistsQuery, sql.Named("tableName", table))
+	if err := row.Scan(&tableExist); err != nil {
 		return false, fmt.Errorf("failed to check if table %s exists: %w", table, err)
 	}
 	return tableExist == 1, nil

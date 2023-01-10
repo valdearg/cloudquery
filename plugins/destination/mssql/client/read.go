@@ -10,7 +10,7 @@ import (
 
 func (c *Client) Read(ctx context.Context, table *schema.Table, sourceName string, res chan<- []any) (err error) {
 	tx, err := c.db.BeginTx(ctx, &sql.TxOptions{
-		Isolation: sql.LevelReadCommitted,
+		Isolation: sql.LevelRepeatableRead,
 		ReadOnly:  true,
 	})
 	if err != nil {
@@ -24,7 +24,7 @@ func (c *Client) Read(ctx context.Context, table *schema.Table, sourceName strin
 	}()
 
 	rows, err := tx.QueryContext(ctx,
-		fmt.Sprintf(`select * from %s where %s = $sourceName order by %s asc`,
+		fmt.Sprintf(`select * from %s where %s = @sourceName order by %s asc`,
 			sanitizeIdentifier(table.Name),
 			sanitizeIdentifier(schema.CqSourceNameColumn.Name),
 			sanitizeIdentifier(schema.CqSyncTimeColumn.Name),

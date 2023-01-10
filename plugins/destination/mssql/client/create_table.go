@@ -8,11 +8,11 @@ import (
 	"github.com/cloudquery/plugin-sdk/schema"
 )
 
-func (c *Client) createTableIfNotExist(ctx context.Context, table *schema.Table) error {
+func (c *Client) createTable(ctx context.Context, table *schema.Table) error {
 	c.logger.Debug().Str("table", table.Name).Msg("Table doesn't exist, creating")
 
 	var sb strings.Builder
-	sb.WriteString("create table if not exists ")
+	sb.WriteString("create table ")
 	sb.WriteString(sanitizeIdentifier(table.Name))
 
 	sb.WriteString(" (")

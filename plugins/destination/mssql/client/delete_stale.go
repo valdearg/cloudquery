@@ -17,7 +17,7 @@ func (c *Client) DeleteStale(ctx context.Context, tables schema.Tables, sourceNa
 
 	for _, table := range tables.FlattenTables() {
 		_, err = tx.ExecContext(ctx,
-			fmt.Sprintf(`delete from %s where %s = $sourceName and %s < $syncTime`,
+			fmt.Sprintf(`delete from %s where %s = @sourceName and %s < @syncTime`,
 				sanitizeIdentifier(table.Name),
 				sanitizeIdentifier(schema.CqSourceNameColumn.Name),
 				sanitizeIdentifier(schema.CqSyncTimeColumn.Name),

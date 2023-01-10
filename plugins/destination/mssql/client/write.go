@@ -53,7 +53,7 @@ func insert(table *schema.Table) string {
 
 	params := make([]string, len(columns))
 	for i := range columns {
-		params[i] = strconv.Itoa(i)
+		params[i] = "@p" + strconv.Itoa(i+1)
 	}
 	sb.WriteString(strings.Join(params, ", "))
 

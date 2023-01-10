@@ -1,13 +1,12 @@
 package client
 
 import (
-	"fmt"
-	"net/url"
 	"os"
 	"testing"
 
 	"github.com/cloudquery/cloudquery/plugins/destination/mssql/resources/plugin"
 	"github.com/cloudquery/plugin-sdk/plugins/destination"
+	"github.com/microsoft/go-mssqldb/msdsn"
 )
 
 func getTestConnection() string {
@@ -15,16 +14,15 @@ func getTestConnection() string {
 		return testConn
 	}
 
-	query := url.Values{
-		"encrypt": []string{"disable"},
-	}
-
-	return (&url.URL{
-		Scheme:   "sqlserver",
-		User:     url.UserPassword("mssql", "<YourStrong@Passw0rd>"),
-		Host:     fmt.Sprintf("%s:%d", "localhost", 1433),
-		RawQuery: query.Encode(),
-	}).String()
+	return msdsn.Config{
+		Port:       1433,
+		Host:       "localhost",
+		Database:   "cloudquery",
+		User:       "SA",
+		Password:   "yourStrongP@ssword",
+		Encryption: msdsn.EncryptionDisabled,
+		LogFlags:   (msdsn.LogRetries << 1) - 1,
+	}.URL().String()
 }
 
 func TestPgPlugin(t *testing.T) {
